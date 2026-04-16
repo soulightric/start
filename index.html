@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etherthink Search</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link rel="shortcut icon" href="/Etherthink.ico" type="image/x-icon">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #00FFAA;
+      --primary-dim: #00cc88;
+      --primary-glow: rgba(0,255,170,0.15);
+      --primary-faint: rgba(0,255,170,0.05);
+      --bg: #080c10;
+      --bg2: #0d1117;
+      --bg3: #111820;
+      --surface: #141c24;
+      --border: rgba(0,255,170,0.18);
+      --border-soft: rgba(255,255,255,0.06);
+      --text: #e8f0f8;
+      --text-muted: #7a8fa3;
+      --text-dim: #3d5266;
+      --red: #ff4466;
+      --yellow: #ffcc00;
+      --blue: #4488ff;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Grid background ── */
+    /* body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,170,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,170,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    } */
+
+    /* ── Ambient orb ── */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(0,255,170,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 36px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      position: relative;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .logo-text span {
+      color: var(--primary);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--primary); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-sm {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      padding: 7px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--primary);
+    }
+
+    .btn-ghost:hover {
+      background: var(--primary-glow);
+    }
+
+    .btn-solid {
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      color: #080c10;
+      font-weight: 700;
+    }
+
+    .btn-solid:hover {
+      background: var(--primary-dim);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px 40px;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--primary);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-eyebrow::before,
+    .hero-eyebrow::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: var(--primary);
+      opacity: 0.5;
+    }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(42px, 8vw, 80px);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+    }
+
+    .hero-title .line1 { color: var(--text); }
+    .hero-title .line2 { color: var(--primary); }
+
+    .hero-subtitle {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      max-width: 440px;
+      line-height: 1.7;
+    }
+
+    /* ── Search box ── */
+    .search-wrapper {
+      width: 100%;
+      max-width: 680px;
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 4px 4px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0,255,170,0.1);
+    }
+
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      padding: 12px 0;
+      caret-color: var(--primary);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .search-btn {
+      background: var(--primary);
+      border: none;
+      color: #080c10;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    /* ==================== RESPONSIVE MOBILE ==================== */
+    @media (max-width: 480px) {
+    .search-btn {
+        /* Naikkan ukuran biar nyaman di jari */
+        font-size: 14px;           /* dari 12px → lebih mudah dibaca */
+        padding: 14px 20px;        /* vertical naik, horizontal agak dikurangi biar tidak terlalu lebar */
+        min-height: 48px;          /* pastikan touch target minimal 48px (Apple & Google rekomendasi) */
+        gap: 10px;                 /* jarak icon & teks agak lebih longgar */
+        border-radius: 6px;        /* sedikit lebih rounded di mobile (opsional) */
+    }
+    }
+
+    /* Bonus: kalau kamu mau bedakan lagi di layar super kecil (misal iPhone SE) */
+    @media (max-width: 360px) {
+    .search-btn {
+        padding: 13px 18px;
+        font-size: 13.5px;
+    }
+    }
+
+    .search-btn:hover { background: var(--primary-dim); }
+    .search-btn:active { transform: scale(0.98); }
+
+    .search-tags {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .search-tag-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      padding: 5px 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: 100px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: transparent;
+    }
+
+    .tag:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* ── Filter tabs ── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 16px;
+    }
+
+    .filter-tab {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: transparent;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-tab.active, .filter-tab:hover {
+      border-color: var(--border);
+      color: var(--primary);
+      background: var(--primary-faint);
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      padding: 24px;
+      border-top: 1px solid var(--border-soft);
+      margin-top: auto;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary);
+      display: block;
+    }
+
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 32px;
+      background: var(--border-soft);
+    }
+
+    /* ── Widget row ── */
+    .widgets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      border-top: 1px solid var(--border-soft);
+      background: var(--border-soft);
+    }
+
+    .widget {
+      background: var(--bg);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: background 0.2s;
+      cursor: default;
+    }
+
+    .widget:hover { background: var(--bg3); }
+
+    .widget-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .widget-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .widget-value.good { color: #00FFAA; }
+    .widget-value.warn { color: #ffcc00; }
+    .widget-value.bad  { color: #ff4466; }
+
+    .widget-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    /* ── Clock ── */
+    #clock {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+    }
+
+    /* ── Ticker ── */
+    .ticker {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker 20s linear infinite;
+    }
+
+    .ticker-item { margin-right: 32px; }
+    .ticker-item .up { color: var(--primary); }
+    .ticker-item .dn { color: var(--red); }
+
+    @keyframes ticker {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ── Bottom bar ── */
+    .bottombar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 36px;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .bottom-left {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+    }
+
+    .bottom-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .bottom-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+    }
+
+    .bottom-links a:hover { color: var(--primary); }
+
+    /* ── Cursor blink ── */
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 16px;
+      background: var(--primary);
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* ── Scan line subtle ── */
+    .scanline {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      opacity: 0.4;
+      animation: scan 4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    @keyframes scan {
+      0%   { top: 0%; opacity: 0; }
+      10%  { opacity: 0.4; }
+      90%  { opacity: 0.4; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* ── SVG logo ── */
+    .logo-svg { display: block; }
+
+    @media (max-width: 700px) {
+      .topbar { padding: 14px 18px; }
+      .nav-links { display: none; }
+      .widgets { grid-template-columns: repeat(2, 1fr); }
+      .stats-bar { gap: 20px; }
+      .bottombar { flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<div class="page">
+
+  <!-- TOP BAR -->
+  <!-- <header class="topbar">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg class="logo-svg" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill="none" stroke="#00FFAA" stroke-width="1.5"/>
+          <polygon points="16,8 24,13 24,21 16,26 8,21 8,13" fill="rgba(0,255,170,0.08)" stroke="#00FFAA" stroke-width="1"/>
+          <circle cx="16" cy="16" r="3" fill="#00FFAA"/>
+          <line x1="16" y1="2" x2="16" y2="8" stroke="#00FFAA" stroke-width="1" opacity="0.5"/>
+          <line x1="16" y1="24" x2="16" y2="30" stroke="#00FFAA" stroke-width="1" opacity="0.5"/>
+        </svg>
+      </div>
+      <span class="logo-text">Ether<span>think</span></span>
+    </div>
+
+    <nav>
+      <ul class="nav-links">
+        <li><a href="#">Web</a></li>
+        <li><a href="#">Images</a></li>
+        <li><a href="#">News</a></li>
+        <li><a href="#">Docs</a></li>
+        <li><a href="#">Maps</a></li>
+      </ul>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn-sm btn-ghost" href="#">Sign in</a>
+      <a class="btn-sm btn-solid" href="#">Try Pro</a>
+    </div>
+  </header> -->
+
+  <!-- HERO -->
+  <main class="hero">
+    <div class="hero-eyebrow">Etherthink Search Engine</div>
+
+    <h1 class="hero-title">
+      <div class="line1">Discover Beyond</div>
+      <!-- <div class="line2">The Etherthink<span class="cursor"></span></div> -->
+    </h1>
+
+    <p class="hero-subtitle">
+      Intelligent search that thinks with Etherthink. Fast, private, and deeply contextual.
+    </p>
+
+    <!-- Search -->
+    <div class="search-wrapper">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0; opacity:0.4; margin-right:4px;">
+          <circle cx="6.5" cy="6.5" r="5" stroke="#00FFAA" stroke-width="1.5"/>
+          <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="#00FFAA" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input class="search-input" id="search-input" type="text" placeholder="Search anything..." autocomplete="off" />
+        <button class="search-btn" onclick="doSearch()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1 7h10M8 3l4 4-4 4" stroke="#080c10" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Search
+        </button>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <!-- <div class="search-tags">
+      <span class="search-tag-label">Try:</span>
+      <button class="tag" onclick="fillSearch('AI research 2025')">AI research 2025</button>
+      <button class="tag" onclick="fillSearch('quantum computing')">quantum computing</button>
+      <button class="tag" onclick="fillSearch('open source tools')">open source tools</button>
+      <button class="tag" onclick="fillSearch('web3 latest')">web3 latest</button>
+    </div> -->
+
+    <!-- Filter tabs -->
+    <!-- <div class="filter-bar">
+      <button class="filter-tab active">All</button>
+      <button class="filter-tab">Web</button>
+      <button class="filter-tab">Images</button>
+      <button class="filter-tab">News</button>
+      <button class="filter-tab">Videos</button>
+      <button class="filter-tab">Code</button>
+    </div>
+  </main> -->
+
+  <!-- STATS BAR -->
+  <!-- <section class="stats-bar">
+    <div class="stat">
+      <span class="stat-num">14.2B</span>
+      <span class="stat-label">Pages indexed</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <span class="stat-num">0.04s</span>
+      <span class="stat-label">Avg response</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <span class="stat-num">99.9%</span>
+      <span class="stat-label">Uptime</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <span class="stat-num" id="live-time">—</span>
+      <span class="stat-label">Local time</span>
+    </div>
+  </section> -->
+
+  <!-- WIDGET ROW -->
+  <!-- <section class="widgets">
+    <div class="widget">
+      <span class="widget-label">Search Activity</span>
+      <span class="widget-value good" id="req-count">2,481</span>
+      <span class="widget-sub">queries today</span>
+    </div>
+    <div class="widget">
+      <span class="widget-label">Network Status</span>
+      <span class="widget-value good">● Online</span>
+      <span class="widget-sub">All nodes active</span>
+    </div>
+    <div class="widget">
+      <span class="widget-label">Trending Now</span>
+      <div class="ticker" style="margin-top:2px;">
+        <span class="ticker-inner">
+          <span class="ticker-item">AI Ethics <span class="up">↑</span></span>
+          <span class="ticker-item">Quantum Nets <span class="up">↑</span></span>
+          <span class="ticker-item">Privacy Laws <span class="dn">↓</span></span>
+          <span class="ticker-item">Open Source <span class="up">↑</span></span>
+          <span class="ticker-item">Dark Web <span class="dn">↓</span></span>
+          <span class="ticker-item">AI Ethics <span class="up">↑</span></span>
+          <span class="ticker-item">Quantum Nets <span class="up">↑</span></span>
+          <span class="ticker-item">Privacy Laws <span class="dn">↓</span></span>
+          <span class="ticker-item">Open Source <span class="up">↑</span></span>
+          <span class="ticker-item">Dark Web <span class="dn">↓</span></span>
+        </span>
+      </div>
+    </div>
+    <div class="widget">
+      <span class="widget-label">Privacy Mode</span>
+      <span class="widget-value good">Protected</span>
+      <span class="widget-sub">No tracking · E2E encrypted</span>
+    </div>
+  </section> -->
+
+  <!-- BOTTOM BAR -->
+  <!-- <footer class="bottombar">
+    <span class="bottom-left">© 2025 Etherthink — v1.0.0</span>
+    <div class="bottom-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">About</a>
+      <a href="#">API</a>
+      <a href="#">Help</a>
+    </div>
+  </footer> -->
+
+</div>
+
+<script>
+  function doSearch() {
+    const q = document.getElementById('search-input').value.trim();
+    if (q) {
+      window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+    }
+  }
+
+  document.getElementById('search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  function fillSearch(text) {
+    document.getElementById('search-input').value = text;
+    document.getElementById('search-input').focus();
+  }
+
+  // Filter tabs
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // Live clock
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('live-time').textContent = h + ':' + m + ':' + s;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Query counter animation
+  let count = 2481;
+  setInterval(() => {
+    count += Math.floor(Math.random() * 3);
+    document.getElementById('req-count').textContent = count.toLocaleString();
+  }, 2000);
+</script>
+
+</body>
+</html>
